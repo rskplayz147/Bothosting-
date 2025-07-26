@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+bot_data.db
+user_bots/
+server.log
+.env
+venv/
+node_modules/

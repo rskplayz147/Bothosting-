@@ -1,0 +1,25 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <h2>Settings for {{ file.name }}</h2>
+        <form action="{{ url_for('file_settings', file_id=file.id) }}" method="post">
+            <div class="form-group">
+                <label for="env_vars">Environment Variables (key=value, one per line)</label>
+                <textarea id="env_vars" name="env_vars" rows="5" style="width:100%;">{{ '\n'.join(file.settings.env | dictsort | map('join', '=') | list) }}</textarea>
+            </div>
+            <div class="form-group">
+                <label for="args">Command-line Arguments (space-separated)</label>
+                <input type="text" id="args" name="args" value="{{ ' '.join(file.settings.args) }}">
+            </div>
+            <button type="submit" class="auth-btn">
+                <i class="fas fa-save"></i> Save Settings
+            </button>
+        </form>
+        <div class="auth-footer">
+            <a href="{{ url_for('index') }}">Back to Dashboard</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

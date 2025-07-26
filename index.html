@@ -1,0 +1,123 @@
+{% extends "layout.html" %}
+
+{% block head %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.min.js"></script>
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="user-info">
+        <h2>Welcome, {{ username }}</h2>
+        <p>Manage your scripts with ease</p>
+        {% if session.role == 'admin' %}
+            <a href="{{ url_for('admin_users') }}" class="btn">Admin Panel</a>
+        {% endif %}
+        <a href="{{ url_for('logout') }}" class="btn">Logout</a>
+    </div>
+
+    <div class="upload-section">
+        <h3>Upload New Script</h3>
+        <form action="{{ url_for('upload_file') }}" method="post" enctype="multipart/form-data">
+            <label class="file-upload-label">
+                <i class="fas fa-upload"></i>
+                <span>Choose a file (.py, .js, .zip)</span>
+                <input type="file" id="file-upload" name="file" accept=".py,.js,.zip" required>
+            </label>
+            <button type="submit" class="upload-btn">
+                <i class="fas fa-cloud-upload-alt"></i> Upload
+            </button>
+        </form>
+    </div>
+
+    <div class="file-list">
+        <div class="file-list-header">
+            <h3>Your Scripts</h3>
+            <span>{{ files | length }} / {{ max_files }} files</span>
+        </div>
+        {% if files %}
+            <div class="files-grid">
+                {% for file in files %}
+                <div class="file-card {{ file.status }}" data-file-id="{{ file.id }}">
+                    <div class="file-info">
+                        <h4 title="{{ file.name }}">{{ file.name }}</h4>
+                        <span class="file-type">{{ file.type }}</span>
+                        <span class="status-badge {{ file.status }}" id="status-{{ file.id }}">
+                            <i class="fas fa-circle"></i> {{ file.status }}
+                        </span>
+                        <span class="status-badge">
+                            <i class="fas fa-lock{{ '-open' if not file.locked else '' }}"></i>
+                            {{ 'Locked' if file.locked else 'Unlocked' }}
+                        </span>
+                    </div>
+                    <div class="file-actions">
+                        {% if file.status == 'running' %}
+                            <button class="btn stop-btn" id="stop-{{ file.id }}">
+                                <i class="fas fa-stop"></i> Stop
+                            </button>
+                            <button class="btn start-btn" id="start-{{ file.id }}" style="display:none">
+                                <i class="fas fa-play"></i> Start
+                            </button>
+                        {% else %}
+                            <button class="btn start-btn" id="start-{{ file.id }}">
+                                <i class="fas fa-play"></i> Start
+                            </button>
+                            <button class="btn stop-btn" id="stop-{{ file.id }}" style="display:none">
+                                <i class="fas fa-stop"></i> Stop
+                            </button>
+                        {% endif %}
+                        <button class="btn logs-btn" id="logs-{{ file.id }}-btn">
+                            <i class="fas fa-terminal"></i> Logs
+                        </button>
+                        <button class="btn" id="restart-{{ file.id }}">
+                            <i class="fas fa-redo"></i> Restart
+                        </button>
+                        <a href="{{ url_for('file_settings', file_id=file.id) }}" class="btn">
+                            <i class="fas fa-cog"></i> Settings
+                        </a>
+                        <form action="{{ url_for('delete_file', file_id=file.id) }}" method="post" style="display:inline;">
+                            <button type="submit" class="btn delete-btn" onclick="return confirm('Are you sure?')">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </form>
+                        {% if file.locked %}
+                            <button class="btn" id="unlock-{{ file.id }}">
+                                <i class="fas fa-lock-open"></i> Unlock
+                            </button>
+                            <button class="btn" id="lock-{{ file.id }}" style="display:none">
+                                <i class="fas fa-lock"></i> Lock
+                            </button>
+                        {% else %}
+                            <button class="btn" id="lock-{{ file.id }}">
+                                <i class="fas fa-lock"></i> Lock
+                            </button>
+                            <button class="btn" id="unlock-{{ file.id }}" style="display:none">
+                                <i class="fas fa-lock-open"></i> Unlock
+                            </button>
+                        {% endif %}
+                        <div>
+                            <input type="text" id="schedule-{{ file.id }}" placeholder="HH:MM" size="5">
+                            <button class="btn" id="schedule-btn-{{ file.id }}">
+                                <i class="fas fa-clock"></i> Schedule
+                            </button>
+                        </div>
+                    </div>
+                    <pre id="logs-{{ file.id }}" style="display:none; max-height:200px; overflow-y:auto; font-size:0.8rem;"></pre>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="no-files">
+                <i class="fas fa-folder-open"></i>
+                <p>No scripts uploaded yet</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="analytics">
+        <h3>Activity Analytics</h3>
+        <canvas id="analytics-chart"></canvas>
+    </div>
+</div>
+{% endblock %}
