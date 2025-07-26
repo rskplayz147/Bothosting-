@@ -20,13 +20,21 @@ import smtplib
 from email.mime.text import MIMEText
 
 # Initialize Flask app
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+
+# Ensure folders exist
+INSTANCE_DIR = os.path.join(BASE_DIR, 'instance')
+os.makedirs(INSTANCE_DIR, exist_ok=True)
+
+UPLOAD_DIR = os.path.join(BASE_DIR, 'uploads')
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+
 # Initialize Flask app
 app = Flask(__name__)
 app.secret_key = os.urandom(24).hex()
-app.config['UPLOAD_FOLDER'] = os.getenv('UPLOAD_FOLDER', '/var/data/user_bots')  # (optional: fix if needed)
-os.makedirs(os.path.join(os.getcwd(), 'instance'), exist_ok=True)  # ensure folder exists
-app.config['DATABASE'] = os.path.join(os.getcwd(), 'fck', 'bot_data.db')  # ✅ safe path
-app.config['MAX_CONTENT_LENGTH'] = 64 * 1024 * 1024  # 64MB max file size
+app.config['DATABASE'] = os.path.join(INSTANCE_DIR, 'bot_data.db')
+app.config['UPLOAD_FOLDER'] = UPLOAD_DIR
+app.config['MAX_CONTENT_LENGTH'] = 64 * 1024 * 1024
 app.config['MAX_FILES_PER_USER'] = 10
 app.config['ALLOWED_EXTENSIONS'] = {'py', 'js', 'zip'}
 CORS(app)  # Enable CORS for API access
